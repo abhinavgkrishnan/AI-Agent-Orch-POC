@@ -1,4 +1,4 @@
-import { VercelRequest, VercelResponse } from '@vercel/node';
+import { VercelRequest, VercelResponse } from "@vercel/node";
 import dotenv from "dotenv";
 
 dotenv.config({ path: ".env.local" });
@@ -17,7 +17,7 @@ interface SerperResponse {
   };
 }
 
-async function searchWithSerper(query: string): Promise<string[]> {
+export async function searchWithSerper(query: string): Promise<string[]> {
   console.log("SERPER_API_KEY:", process.env.SERPER_API_KEY);
   if (!process.env.SERPER_API_KEY) {
     throw new Error("SERPER_API_KEY is required for data collection");
@@ -55,8 +55,8 @@ async function searchWithSerper(query: string): Promise<string[]> {
 }
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
-  if (req.method !== 'POST') {
-    return res.status(405).json({ error: 'Method not allowed' });
+  if (req.method !== "POST") {
+    return res.status(405).json({ error: "Method not allowed" });
   }
 
   const { topic } = req.body;
@@ -83,7 +83,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       {
         method: "POST",
         headers: {
-          Authorization: "Bearer eDsBy2D9vSFWtXZBEAHTPqrvMm7BJqTe2LJ4BhsUHVECir28rKq6dPLK2k7sScQb",
+          Authorization:
+            "Bearer eDsBy2D9vSFWtXZBEAHTPqrvMm7BJqTe2LJ4BhsUHVECir28rKq6dPLK2k7sScQb",
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
@@ -109,12 +110,14 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
           max_tokens: 2000,
           temperature: 0.7,
         }),
-      }
+      },
     );
 
     console.log("Data analysis response status:", dataAnalysisResponse.status);
     if (!dataAnalysisResponse.ok) {
-      throw new Error(`Data analysis failed with status ${dataAnalysisResponse.status}`);
+      throw new Error(
+        `Data analysis failed with status ${dataAnalysisResponse.status}`,
+      );
     }
 
     const analysisResult = await dataAnalysisResponse.json();
@@ -128,7 +131,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       {
         method: "POST",
         headers: {
-          Authorization: "Bearer eDsBy2D9vSFWtXZBEAHTPqrvMm7BJqTe2LJ4BhsUHVECir28rKq6dPLK2k7sScQb",
+          Authorization:
+            "Bearer eDsBy2D9vSFWtXZBEAHTPqrvMm7BJqTe2LJ4BhsUHVECir28rKq6dPLK2k7sScQb",
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
@@ -181,7 +185,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
           max_tokens: 3000,
           temperature: 0.7,
         }),
-      }
+      },
     );
 
     console.log("Thesis generation response status:", thesisResponse.status);
@@ -200,7 +204,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
           try {
             const parsed = JSON.parse(buffer);
             if (parsed.choices?.[0]?.delta?.content) {
-              res.write(`data: ${JSON.stringify({ response: parsed.choices[0].delta.content })}\n\n`);
+              res.write(
+                `data: ${JSON.stringify({ response: parsed.choices[0].delta.content })}\n\n`,
+              );
             }
           } catch (e) {
             console.error("Error parsing buffer:", e);
@@ -237,10 +243,17 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   } catch (error) {
     if (error instanceof Error) {
       console.error("API error:", error);
-      res.status(500).json({ error: "Failed to generate thesis", details: error.message });
+      res
+        .status(500)
+        .json({ error: "Failed to generate thesis", details: error.message });
     } else {
       console.error("Unexpected error:", error);
-      res.status(500).json({ error: "Failed to generate thesis", details: "An unexpected error occurred" });
+      res
+        .status(500)
+        .json({
+          error: "Failed to generate thesis",
+          details: "An unexpected error occurred",
+        });
     }
   }
 }

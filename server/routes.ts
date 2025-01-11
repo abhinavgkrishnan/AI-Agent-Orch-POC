@@ -1,6 +1,6 @@
 import express from "express";
 import dotenv from "dotenv";
-import searchWithSerper from "../api/generate-thesis"; // Import the searchWithSerper function from generate-thesis.ts
+import { searchWithSerper } from "../api/generate-thesis"; // Import the searchWithSerper function from generate-thesis.ts
 
 dotenv.config({ path: ".env.local" });
 
@@ -29,6 +29,9 @@ export function registerRoutes(app: express.Express) {
 
       // First, collect real data using Serper API
       const searchResults = await searchWithSerper(topic);
+      if (!searchResults) {
+        throw new Error("Failed to fetch search results");
+      }
       console.log("Search results:", searchResults);
 
       const collectedData = searchResults.join("\n");
@@ -219,12 +222,10 @@ export function registerRoutes(app: express.Express) {
           .json({ error: "Failed to generate thesis", details: error.message });
       } else {
         console.error("Unexpected error:", error);
-        res
-          .status(500)
-          .json({
-            error: "Failed to generate thesis",
-            details: "An unexpected error occurred",
-          });
+        res.status(500).json({
+          error: "Failed to generate thesis",
+          details: "An unexpected error occurred",
+        });
       }
     }
   });
