@@ -184,7 +184,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         }
       }
     }
-  } catch (error) {
+  } catch (error: any) { // Explicitly type the error as any
     console.error("API error:", error);
     res.status(500).json({ error: "Failed to generate thesis", details: error.message });
   }
