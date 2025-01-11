@@ -1,12 +1,12 @@
-import { VercelRequest, VercelResponse } from "@vercel/node";
+import { VercelRequest, VercelResponse } from '@vercel/node';
 import { searchWithSerper } from "../server/utils/search";
 import dotenv from "dotenv";
 
 dotenv.config({ path: ".env.local" });
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
-  if (req.method !== "POST") {
-    return res.status(405).json({ error: "Method not allowed" });
+  if (req.method !== 'POST') {
+    return res.status(405).json({ error: 'Method not allowed' });
   }
 
   const { topic } = req.body;
@@ -14,8 +14,12 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   try {
     console.log("Received request to generate thesis for topic:", topic);
     console.log("Environment Variables:");
-    console.log("PORT:", process.env.PORT);
     console.log("NODE_ENV:", process.env.NODE_ENV);
+    console.log("SERPER_API_KEY:", process.env.SERPER_API_KEY);
+
+    if (!process.env.SERPER_API_KEY) {
+      throw new Error("SERPER_API_KEY is not set");
+    }
 
     // First, collect real data using Serper API
     const searchResults = await searchWithSerper(topic);
@@ -29,8 +33,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       {
         method: "POST",
         headers: {
-          Authorization:
-            "Bearer eDsBy2D9vSFWtXZBEAHTPqrvMm7BJqTe2LJ4BhsUHVECir28rKq6dPLK2k7sScQb",
+          Authorization: "Bearer eDsBy2D9vSFWtXZBEAHTPqrvMm7BJqTe2LJ4BhsUHVECir28rKq6dPLK2k7sScQb",
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
@@ -56,14 +59,12 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
           max_tokens: 2000,
           temperature: 0.7,
         }),
-      },
+      }
     );
 
     console.log("Data analysis response status:", dataAnalysisResponse.status);
     if (!dataAnalysisResponse.ok) {
-      throw new Error(
-        `Data analysis failed with status ${dataAnalysisResponse.status}`,
-      );
+      throw new Error(`Data analysis failed with status ${dataAnalysisResponse.status}`);
     }
 
     const analysisResult = await dataAnalysisResponse.json();
@@ -77,8 +78,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       {
         method: "POST",
         headers: {
-          Authorization:
-            "Bearer eDsBy2D9vSFWtXZBEAHTPqrvMm7BJqTe2LJ4BhsUHVECir28rKq6dPLK2k7sScQb",
+          Authorization: "Bearer eDsBy2D9vSFWtXZBEAHTPqrvMm7BJqTe2LJ4BhsUHVECir28rKq6dPLK2k7sScQb",
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
@@ -131,7 +131,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
           max_tokens: 3000,
           temperature: 0.7,
         }),
-      },
+      }
     );
 
     console.log("Thesis generation response status:", thesisResponse.status);
@@ -150,9 +150,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
           try {
             const parsed = JSON.parse(buffer);
             if (parsed.choices?.[0]?.delta?.content) {
-              res.write(
-                `data: ${JSON.stringify({ response: parsed.choices[0].delta.content })}\n\n`,
-              );
+              res.write(`data: ${JSON.stringify({ response: parsed.choices[0].delta.content })}\n\n`);
             }
           } catch (e) {
             console.error("Error parsing buffer:", e);
@@ -188,6 +186,6 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     }
   } catch (error) {
     console.error("API error:", error);
-    res.status(500).json({ error: "Failed to generate thesis" });
+    res.status(500).json({ error: "Failed to generate thesis", details: error.message });
   }
 }
