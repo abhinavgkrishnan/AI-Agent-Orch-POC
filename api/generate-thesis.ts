@@ -205,7 +205,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             const parsed = JSON.parse(buffer);
             if (parsed.choices?.[0]?.delta?.content) {
               res.write(
-                `data: ${JSON.stringify({ response: parsed.choices[0].delta.content })}\n\n`,
+                `data: ${JSON.stringify({ response: parsed.choices[0].delta.content, sources: searchResults })}\n\n`,
               );
             }
           } catch (e) {
@@ -232,7 +232,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             const parsed = JSON.parse(jsonStr);
             if (parsed.choices?.[0]?.delta?.content) {
               const content = parsed.choices[0].delta.content;
-              res.write(`data: ${JSON.stringify({ response: content })}\n\n`);
+              res.write(`data: ${JSON.stringify({ response: content, sources: searchResults })}\n\n`);
             }
           } catch (e) {
             console.error("Error parsing JSON:", e);

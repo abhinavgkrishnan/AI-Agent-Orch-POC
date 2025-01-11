@@ -1,9 +1,13 @@
 import express, { type Request, Response, NextFunction } from "express";
+import dotenv from "dotenv";
 import { registerRoutes } from "./routes";
 import path from "path";
 import { fileURLToPath } from "url";
 import { VercelRequest, VercelResponse } from "@vercel/node";
 import { log } from "./vite";
+
+// Load environment variables from .env.local
+dotenv.config({ path: ".env.local" });
 
 // Define __filename and __dirname for ES modules
 const __filename = fileURLToPath(import.meta.url);
