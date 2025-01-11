@@ -61,7 +61,7 @@ app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
   res.status(status).json({ message });
 });
 
-// Serve static files from the dist/public directory
+// Serve static files from the client/dist directory
 const distPath = path.resolve(__dirname, "../client/dist");
 app.use(express.static(distPath));
 
