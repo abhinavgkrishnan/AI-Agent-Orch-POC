@@ -1,5 +1,5 @@
 import { VercelRequest, VercelResponse } from '@vercel/node';
-import { searchWithSerper } from "./utils/search";
+import { searchWithSerper } from "./search";
 import dotenv from "dotenv";
 
 dotenv.config({ path: ".env.local" });

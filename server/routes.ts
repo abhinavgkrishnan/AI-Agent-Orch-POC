@@ -1,5 +1,5 @@
 import express from "express";
-import { searchWithSerper } from "../api/utils/search";
+import { searchWithSerper } from "../api/search";
 import dotenv from "dotenv";
 
 dotenv.config({ path: ".env.local" });
