@@ -1,6 +1,6 @@
 import express from "express";
 import dotenv from "dotenv";
-import { searchWithSerper } from "../api/generate-thesis"; // Import the searchWithSerper function from generate-thesis.ts
+import searchWithSerper from "../api/generate-thesis"; // Import the searchWithSerper function from generate-thesis.ts
 
 dotenv.config({ path: ".env.local" });
 
@@ -10,8 +10,8 @@ export function registerRoutes(app: express.Express) {
   let researchData = [];
 
   app.post("/api/generate-thesis", async (req, res) => {
-    if (req.method !== 'POST') {
-      return res.status(405).json({ error: 'Method not allowed' });
+    if (req.method !== "POST") {
+      return res.status(405).json({ error: "Method not allowed" });
     }
 
     const { topic } = req.body;
@@ -51,7 +51,8 @@ export function registerRoutes(app: express.Express) {
         {
           method: "POST",
           headers: {
-            Authorization: "Bearer eDsBy2D9vSFWtXZBEAHTPqrvMm7BJqTe2LJ4BhsUHVECir28rKq6dPLK2k7sScQb",
+            Authorization:
+              "Bearer eDsBy2D9vSFWtXZBEAHTPqrvMm7BJqTe2LJ4BhsUHVECir28rKq6dPLK2k7sScQb",
             "Content-Type": "application/json",
           },
           body: JSON.stringify({
@@ -77,12 +78,17 @@ export function registerRoutes(app: express.Express) {
             max_tokens: 2000,
             temperature: 0.7,
           }),
-        }
+        },
       );
 
-      console.log("Data analysis response status:", dataAnalysisResponse.status);
+      console.log(
+        "Data analysis response status:",
+        dataAnalysisResponse.status,
+      );
       if (!dataAnalysisResponse.ok) {
-        throw new Error(`Data analysis failed with status ${dataAnalysisResponse.status}`);
+        throw new Error(
+          `Data analysis failed with status ${dataAnalysisResponse.status}`,
+        );
       }
 
       const analysisResult = await dataAnalysisResponse.json();
@@ -96,7 +102,8 @@ export function registerRoutes(app: express.Express) {
         {
           method: "POST",
           headers: {
-            Authorization: "Bearer eDsBy2D9vSFWtXZBEAHTPqrvMm7BJqTe2LJ4BhsUHVECir28rKq6dPLK2k7sScQb",
+            Authorization:
+              "Bearer eDsBy2D9vSFWtXZBEAHTPqrvMm7BJqTe2LJ4BhsUHVECir28rKq6dPLK2k7sScQb",
             "Content-Type": "application/json",
           },
           body: JSON.stringify({
@@ -149,7 +156,7 @@ export function registerRoutes(app: express.Express) {
             max_tokens: 3000,
             temperature: 0.7,
           }),
-        }
+        },
       );
 
       console.log("Thesis generation response status:", thesisResponse.status);
@@ -168,7 +175,9 @@ export function registerRoutes(app: express.Express) {
             try {
               const parsed = JSON.parse(buffer);
               if (parsed.choices?.[0]?.delta?.content) {
-                res.write(`data: ${JSON.stringify({ response: parsed.choices[0].delta.content })}\n\n`);
+                res.write(
+                  `data: ${JSON.stringify({ response: parsed.choices[0].delta.content })}\n\n`,
+                );
               }
             } catch (e) {
               console.error("Error parsing buffer:", e);
@@ -205,10 +214,17 @@ export function registerRoutes(app: express.Express) {
     } catch (error) {
       if (error instanceof Error) {
         console.error("API error:", error);
-        res.status(500).json({ error: "Failed to generate thesis", details: error.message });
+        res
+          .status(500)
+          .json({ error: "Failed to generate thesis", details: error.message });
       } else {
         console.error("Unexpected error:", error);
-        res.status(500).json({ error: "Failed to generate thesis", details: "An unexpected error occurred" });
+        res
+          .status(500)
+          .json({
+            error: "Failed to generate thesis",
+            details: "An unexpected error occurred",
+          });
       }
     }
   });
