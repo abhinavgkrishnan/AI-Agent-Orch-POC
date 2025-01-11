@@ -1,6 +1,6 @@
 import express from "express";
-import { searchWithSerper } from "../api/search";
 import dotenv from "dotenv";
+import { searchWithSerper } from "../api/generate-thesis"; // Import the searchWithSerper function from generate-thesis.ts
 
 dotenv.config({ path: ".env.local" });
 
@@ -10,6 +10,10 @@ export function registerRoutes(app: express.Express) {
   let researchData = [];
 
   app.post("/api/generate-thesis", async (req, res) => {
+    if (req.method !== 'POST') {
+      return res.status(405).json({ error: 'Method not allowed' });
+    }
+
     const { topic } = req.body;
 
     try {
@@ -17,6 +21,12 @@ export function registerRoutes(app: express.Express) {
       console.log("Environment Variables:");
       console.log("PORT:", process.env.PORT);
       console.log("NODE_ENV:", process.env.NODE_ENV);
+      console.log("SERPER_API_KEY:", process.env.SERPER_API_KEY);
+
+      if (!process.env.SERPER_API_KEY) {
+        throw new Error("SERPER_API_KEY is not set");
+      }
+
       // First, collect real data using Serper API
       const searchResults = await searchWithSerper(topic);
       console.log("Search results:", searchResults);
@@ -41,8 +51,7 @@ export function registerRoutes(app: express.Express) {
         {
           method: "POST",
           headers: {
-            Authorization:
-              "Bearer eDsBy2D9vSFWtXZBEAHTPqrvMm7BJqTe2LJ4BhsUHVECir28rKq6dPLK2k7sScQb",
+            Authorization: "Bearer eDsBy2D9vSFWtXZBEAHTPqrvMm7BJqTe2LJ4BhsUHVECir28rKq6dPLK2k7sScQb",
             "Content-Type": "application/json",
           },
           body: JSON.stringify({
@@ -50,13 +59,13 @@ export function registerRoutes(app: express.Express) {
               {
                 role: "system",
                 content: `You are a research data analysis agent. Your task is to:
-            1. Analyze the provided search results
-            2. Extract key findings and statistics
-            3. Identify main themes and patterns
-            4. Note conflicting information or debates
-            5. Organize the information into a structured format
+                1. Analyze the provided search results
+                2. Extract key findings and statistics
+                3. Identify main themes and patterns
+                4. Note conflicting information or debates
+                5. Organize the information into a structured format
 
-                   Format the output as a structured research summary with proper citations.`,
+                Format the output as a structured research summary with proper citations.`,
               },
               {
                 role: "user",
@@ -68,17 +77,12 @@ export function registerRoutes(app: express.Express) {
             max_tokens: 2000,
             temperature: 0.7,
           }),
-        },
+        }
       );
 
-      console.log(
-        "Data analysis response status:",
-        dataAnalysisResponse.status,
-      );
+      console.log("Data analysis response status:", dataAnalysisResponse.status);
       if (!dataAnalysisResponse.ok) {
-        throw new Error(
-          `Data analysis failed with status ${dataAnalysisResponse.status}`,
-        );
+        throw new Error(`Data analysis failed with status ${dataAnalysisResponse.status}`);
       }
 
       const analysisResult = await dataAnalysisResponse.json();
@@ -92,8 +96,7 @@ export function registerRoutes(app: express.Express) {
         {
           method: "POST",
           headers: {
-            Authorization:
-              "Bearer eDsBy2D9vSFWtXZBEAHTPqrvMm7BJqTe2LJ4BhsUHVECir28rKq6dPLK2k7sScQb",
+            Authorization: "Bearer eDsBy2D9vSFWtXZBEAHTPqrvMm7BJqTe2LJ4BhsUHVECir28rKq6dPLK2k7sScQb",
             "Content-Type": "application/json",
           },
           body: JSON.stringify({
@@ -101,40 +104,40 @@ export function registerRoutes(app: express.Express) {
               {
                 role: "system",
                 content: `You are a professional academic thesis writer. Generate a focused, coherent research thesis.
-            Follow APA style for citations and references.
-            Do not repeat content. Do not leave sections incomplete.
+                Follow APA style for citations and references.
+                Do not repeat content. Do not leave sections incomplete.
 
-                   Output Format:
-                   # [Title]
+                Output Format:
+                # [Title]
 
-                   ## Abstract
-                   [A clear, concise overview of the research - max 200 words]
+                ## Abstract
+                [A clear, concise overview of the research - max 200 words]
 
-                   ## Introduction
-                   [Background and context]
-                   [Research objectives]
-                   [Significance]
+                ## Introduction
+                [Background and context]
+                [Research objectives]
+                [Significance]
 
-                   ## Methodology
-                   [Research approach]
-                   [Data sources]
-                   [Analysis methods]
+                ## Methodology
+                [Research approach]
+                [Data sources]
+                [Analysis methods]
 
-                   ## Results
-                   [Key findings with specific data points]
-                   [Analysis of trends]
+                ## Results
+                [Key findings with specific data points]
+                [Analysis of trends]
 
-                   ## Discussion
-                   [Interpretation of results]
-                   [Implications]
-                   [Recommendations]
+                ## Discussion
+                [Interpretation of results]
+                [Implications]
+                [Recommendations]
 
-                   ## Conclusion
-                   [Summary]
-                   [Future directions]
+                ## Conclusion
+                [Summary]
+                [Future directions]
 
-                   ## References
-                   [Numbered list of citations]`,
+                ## References
+                [Numbered list of citations]`,
               },
               {
                 role: "user",
@@ -146,7 +149,7 @@ export function registerRoutes(app: express.Express) {
             max_tokens: 3000,
             temperature: 0.7,
           }),
-        },
+        }
       );
 
       console.log("Thesis generation response status:", thesisResponse.status);
@@ -165,9 +168,7 @@ export function registerRoutes(app: express.Express) {
             try {
               const parsed = JSON.parse(buffer);
               if (parsed.choices?.[0]?.delta?.content) {
-                res.write(
-                  `data: ${JSON.stringify({ response: parsed.choices[0].delta.content })}\n\n`,
-                );
+                res.write(`data: ${JSON.stringify({ response: parsed.choices[0].delta.content })}\n\n`);
               }
             } catch (e) {
               console.error("Error parsing buffer:", e);
@@ -202,8 +203,13 @@ export function registerRoutes(app: express.Express) {
         }
       }
     } catch (error) {
-      console.error("API error:", error);
-      res.status(500).json({ error: "Failed to generate thesis" });
+      if (error instanceof Error) {
+        console.error("API error:", error);
+        res.status(500).json({ error: "Failed to generate thesis", details: error.message });
+      } else {
+        console.error("Unexpected error:", error);
+        res.status(500).json({ error: "Failed to generate thesis", details: "An unexpected error occurred" });
+      }
     }
   });
 }
