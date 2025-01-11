@@ -2,6 +2,12 @@ import express, { type Request, Response, NextFunction } from "express";
 import { createServer } from "http";
 import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
+import path from "path";
+import { fileURLToPath } from "url";
+
+// Define __filename and __dirname for ES modules
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 const app = express();
 app.use(express.json());
@@ -46,6 +52,15 @@ app.use((req, res, next) => {
 
     res.status(status).json({ message });
     throw err;
+  });
+
+  // Serve static files from the dist/public directory
+  const distPath = path.resolve(__dirname, "../dist/public");
+  app.use(express.static(distPath));
+
+  // Fallback to index.html for any other requests
+  app.get("*", (_req, res) => {
+    res.sendFile(path.resolve(distPath, "index.html"));
   });
 
   // Create the HTTP server
