@@ -1,5 +1,8 @@
 import express from "express";
 import { searchWithSerper } from "./utils/search";
+import dotenv from "dotenv";
+
+dotenv.config({ path: ".env.local" });
 
 export function registerRoutes(app: express.Express) {
   app.use(express.json());
@@ -11,7 +14,9 @@ export function registerRoutes(app: express.Express) {
 
     try {
       console.log("Received request to generate thesis for topic:", topic);
-
+      console.log("Environment Variables:");
+      console.log("PORT:", process.env.PORT);
+      console.log("NODE_ENV:", process.env.NODE_ENV);
       // First, collect real data using Serper API
       const searchResults = await searchWithSerper(topic);
       console.log("Search results:", searchResults);

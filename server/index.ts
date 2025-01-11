@@ -12,13 +12,6 @@ const __dirname = path.dirname(__filename);
 const app = express();
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
-
-// Log environment variables
-console.log("Environment Variables:");
-console.log("PORT:", process.env.PORT);
-console.log("NODE_ENV:", process.env.NODE_ENV);
-console.log("SERPER_API_KEY:", process.env.SERPER_API_KEY);
-
 app.use((req, res, next) => {
   const start = Date.now();
   const path = req.path;
