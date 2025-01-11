@@ -16,9 +16,9 @@ export default defineConfig({
       "@": path.resolve(__dirname, "client", "src"),
     },
   },
-  root: path.resolve(__dirname, "client"),
+  root: path.resolve(__dirname, "client"), // Set the root to the client folder
   build: {
-    outDir: path.resolve(__dirname, "dist/public"),
+    outDir: path.resolve(__dirname, "client", "dist"), // Output directory for the build
     emptyOutDir: true,
   },
 });

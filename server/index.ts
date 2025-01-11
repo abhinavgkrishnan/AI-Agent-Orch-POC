@@ -81,7 +81,7 @@ app.use((req, res, next) => {
   if (app.get("env") === "development") {
     await setupVite(app, server);
   } else {
-    serveStatic(app, server);
+    serveStatic(app);
   }
 
   // Use the PORT environment variable if available, otherwise default to 3000
