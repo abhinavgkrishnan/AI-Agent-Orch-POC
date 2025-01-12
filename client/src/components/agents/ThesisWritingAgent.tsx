@@ -271,8 +271,27 @@ export function ThesisWritingAgent({
     }
   };
 
+  const makeLinksClickable = (text: string) => {
+    const urlRegex = /(https?:\/\/[^\s]+)/g;
+    return text.split(urlRegex).map((part, index) =>
+      urlRegex.test(part) ? (
+        <a
+          key={index}
+          href={part}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="text-blue-500 underline"
+        >
+          {part}
+        </a>
+      ) : (
+        part
+      ),
+    );
+  };
+
   return (
-    <div className="max-w-6xl mx-auto">
+    <div className="max-w-6xl mx-auto p-4">
       <Card className="bg-gray-900/50 backdrop-blur-sm border-gray-800">
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-gray-200">
@@ -332,7 +351,7 @@ export function ThesisWritingAgent({
           </div>
 
           {pdfUrl && (
-            <div className="w-full h-[600px] rounded-lg border border-gray-800 overflow-hidden">
+            <div className="w-full h-[600px] rounded-lg border border-gray-800 overflow-hidden hidden md:block">
               <object
                 data={pdfUrl}
                 type="application/pdf"
@@ -350,7 +369,7 @@ export function ThesisWritingAgent({
           )}
 
           <Dialog open={showSources} onOpenChange={setShowSources}>
-            <DialogContent className="sm:max-w-[600px] bg-gray-900 text-gray-100">
+            <DialogContent className="sm:max-w-[600px] bg-gray-900 text-gray-100 p-4">
               <DialogHeader>
                 <DialogTitle>Research Sources</DialogTitle>
               </DialogHeader>
@@ -358,8 +377,8 @@ export function ThesisWritingAgent({
                 {sources.length > 0 ? (
                   sources.map((source, index) => (
                     <div key={index} className="p-4 bg-gray-800 rounded-lg">
-                      <p className="whitespace-pre-wrap text-sm text-gray-200">
-                        {source}
+                      <p className="whitespace-pre-wrap break-words text-sm text-gray-200">
+                        {makeLinksClickable(source)}
                       </p>
                     </div>
                   ))

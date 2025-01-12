@@ -18,10 +18,10 @@ export default function Home() {
           className="mb-8"
         >
           <h1 className="text-4xl font-bold text-center text-blue-500 mb-2">
-            AI Research Assistant
+            AI Research Agent
           </h1>
           <p className="text-center text-gray-400">
-            Generate comprehensive research theses powered by advanced AI
+            Generate comprehensive research theses powered by AI
           </p>
         </motion.div>
 

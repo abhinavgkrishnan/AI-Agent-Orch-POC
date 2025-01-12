@@ -75,6 +75,12 @@ app.get("*", (req, res) => {
   res.sendFile(path.resolve(distPath, "index.html"));
 });
 
+// Start the server
+const port = process.env.PORT || 3000;
+app.listen(port, () => {
+  console.log(`Server is running on port ${port}`);
+});
+
 // Export the Express app as a Vercel serverless function
 export default (req: VercelRequest, res: VercelResponse) => {
   app(req, res);
