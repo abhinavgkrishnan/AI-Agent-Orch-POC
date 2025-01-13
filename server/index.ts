@@ -1,10 +1,9 @@
-import express, { type Request, Response, NextFunction } from "express";
+import express from "express";
 import dotenv from "dotenv";
-import { registerRoutes } from "./routes";
 import path from "path";
 import { fileURLToPath } from "url";
-import { VercelRequest, VercelResponse } from "@vercel/node";
-import { log } from "./vite";
+import handler from "../api/generate-thesis"; // Import the handler from generate-thesis.ts
+import { vercelAdapter } from "../utils/vercel-adapter"; // Import the vercelAdapter
 
 // Load environment variables from .env.local
 dotenv.config({ path: ".env.local" });
@@ -23,47 +22,8 @@ console.log("PORT:", process.env.PORT);
 console.log("NODE_ENV:", process.env.NODE_ENV);
 console.log("SERPER_API_KEY:", process.env.SERPER_API_KEY);
 
-app.use((req, res, next) => {
-  const start = Date.now();
-  const path = req.path;
-  let capturedJsonResponse: Record<string, any> | undefined = undefined;
-
-  const originalResJson = res.json;
-  res.json = function (bodyJson, ...args) {
-    capturedJsonResponse = bodyJson;
-    return originalResJson.apply(res, [bodyJson, ...args]);
-  };
-
-  res.on("finish", () => {
-    const duration = Date.now() - start;
-    if (path.startsWith("/api")) {
-      let logLine = `${req.method} ${path} ${res.statusCode} in ${duration}ms`;
-      if (capturedJsonResponse) {
-        logLine += ` :: ${JSON.stringify(capturedJsonResponse)}`;
-      }
-
-      if (logLine.length > 80) {
-        logLine = logLine.slice(0, 79) + "…";
-      }
-
-      log(logLine);
-    }
-  });
-
-  next();
-});
-
-// Register API routes
-console.log("Registering API routes...");
-registerRoutes(app);
-
-app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
-  const status = err.status || err.statusCode || 500;
-  const message = err.message || "Internal Server Error";
-
-  console.error("Error:", err);
-  res.status(status).json({ message });
-});
+// Register API route with vercelAdapter
+app.post("/api/generate-thesis", vercelAdapter(handler));
 
 // Serve static files from the client/dist directory
 const distPath = path.resolve(__dirname, "../client/dist");
@@ -80,8 +40,3 @@ const port = process.env.PORT || 3000;
 app.listen(port, () => {
   console.log(`Server is running on port ${port}`);
 });
-
-// Export the Express app as a Vercel serverless function
-export default (req: VercelRequest, res: VercelResponse) => {
-  app(req, res);
-};
