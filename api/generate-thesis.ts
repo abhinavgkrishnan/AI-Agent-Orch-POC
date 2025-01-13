@@ -8,12 +8,19 @@ interface SerperResponse {
     title: string;
     link: string;
     snippet: string;
-    position: number;
+    position?: number;
+    publicationInfo?: string;
+    year?: number;
+    citedBy?: number;
+    pdfUrl?: string;
+    id?: string;
   }>;
   searchParameters: {
     q: string;
-    gl: string;
-    hl: string;
+    gl?: string;
+    hl?: string;
+    type?: string;
+    engine?: string;
   };
 }
 
@@ -54,6 +61,43 @@ export async function searchWithSerper(query: string): Promise<string[]> {
   }
 }
 
+export async function searchWithSerperScholar(query: string): Promise<string[]> {
+  console.log("SERPER_API_KEY:", process.env.SERPER_API_KEY);
+  if (!process.env.SERPER_API_KEY) {
+    throw new Error("SERPER_API_KEY is required for data collection");
+  }
+
+  try {
+    const response = await fetch("https://google.serper.dev/scholar", {
+      method: "POST",
+      headers: {
+        "X-API-KEY": process.env.SERPER_API_KEY,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        q: query,
+        num: 10, // Number of results to fetch
+      }),
+    });
+
+    if (!response.ok) {
+      throw new Error(`Serper API error: ${response.statusText}`);
+    }
+
+    const data: SerperResponse = await response.json();
+
+    // Extract relevant information from organic search results
+    const results = data.organic.map((result) => {
+      return `Title: ${result.title}\nSnippet: ${result.snippet}\nLink: ${result.link}\nPublication Info: ${result.publicationInfo}\nYear: ${result.year}\nCited By: ${result.citedBy}\nPDF URL: ${result.pdfUrl}\n\n`;
+    });
+
+    return results;
+  } catch (error) {
+    console.error("Serper API error:", error);
+    throw error;
+  }
+}
+
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   if (req.method !== "POST") {
     return res.status(405).json({ error: "Method not allowed" });
@@ -71,11 +115,13 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       throw new Error("SERPER_API_KEY is not set");
     }
 
-    // First, collect real data using Serper API
+    // Collect real data using Serper API
     const searchResults = await searchWithSerper(topic);
+    const scholarResults = await searchWithSerperScholar(topic);
     console.log("Search results:", searchResults);
+    console.log("Scholar results:", scholarResults);
 
-    const collectedData = searchResults.join("\n");
+    const collectedData = [...searchResults, ...scholarResults].join("\n");
 
     // Use LLM to analyze and synthesize the collected data
     const dataAnalysisResponse = await fetch(
@@ -205,7 +251,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             const parsed = JSON.parse(buffer);
             if (parsed.choices?.[0]?.delta?.content) {
               res.write(
-                `data: ${JSON.stringify({ response: parsed.choices[0].delta.content, sources: searchResults })}\n\n`,
+                `data: ${JSON.stringify({ response: parsed.choices[0].delta.content, sources: [...searchResults, ...scholarResults] })}\n\n`,
               );
             }
           } catch (e) {
@@ -232,7 +278,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             const parsed = JSON.parse(jsonStr);
             if (parsed.choices?.[0]?.delta?.content) {
               const content = parsed.choices[0].delta.content;
-              res.write(`data: ${JSON.stringify({ response: content, sources: searchResults })}\n\n`);
+              res.write(`data: ${JSON.stringify({ response: content, sources: [...searchResults, ...scholarResults] })}\n\n`);
             }
           } catch (e) {
             console.error("Error parsing JSON:", e);
